@@ -5,13 +5,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
-import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -20,17 +18,13 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
     private static final int REQ_OVERLAY = 1;
-    private static final int REQ_PROJECTION = 2;
     private static final String PREFS = "appcheat_settings";
-
-    private MediaProjectionManager projectionManager;
     private TextView statusView;
     private LinearLayout root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        projectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         buildMenu();
     }
 
@@ -63,8 +57,7 @@ public class MainActivity extends Activity {
         statusParams.topMargin = dp(22);
         root.addView(statusCard, statusParams);
 
-        TextView statusTitle = text("СОСТОЯНИЕ", 11, 0xFF57D6FF, true);
-        statusCard.addView(statusTitle);
+        statusCard.addView(text("СОСТОЯНИЕ", 11, 0xFF57D6FF, true));
         statusView = text("Оверлей не запущен. Выдай разрешение и нажми «Запустить».",
                 14, 0xFFE6ECF7, false);
         statusView.setPadding(0, dp(8), 0, 0);
@@ -97,7 +90,7 @@ public class MainActivity extends Activity {
         root.addView(stop, stopParams);
         stop.setOnClickListener(v -> {
             stopService(new Intent(this, OverlayService.class));
-            setStatus("Оверлей остановлен.");
+            setStatus("Команда остановки отправлена.");
         });
 
         TextView footer = text("APPCHEAT  •  BUILD 1.1  •  ANDROID PIE+", 10,
@@ -202,12 +195,10 @@ public class MainActivity extends Activity {
             requestOverlayPermission();
             return;
         }
-        if (projectionManager == null) {
-            setStatus("MediaProjection недоступен на этом устройстве.");
-            return;
-        }
-        setStatus("Подтверди системный запрос на захват экрана.");
-        startActivityForResult(projectionManager.createScreenCaptureIntent(), REQ_PROJECTION);
+        Intent serviceIntent = new Intent(this, OverlayService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(serviceIntent);
+        else startService(serviceIntent);
+        setStatus("Отправлена команда запуска оверлея.");
     }
 
     @Override
@@ -216,19 +207,6 @@ public class MainActivity extends Activity {
         if (requestCode == REQ_OVERLAY) {
             setStatus(Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this)
                     ? "Разрешение на оверлей предоставлено." : "Разрешение не предоставлено.");
-            return;
-        }
-        if (requestCode == REQ_PROJECTION) {
-            if (resultCode != RESULT_OK || data == null) {
-                setStatus("Запрос на захват экрана отменён.");
-                return;
-            }
-            Intent serviceIntent = new Intent(this, OverlayService.class);
-            serviceIntent.putExtra(OverlayService.EXTRA_RESULT_CODE, resultCode);
-            serviceIntent.putExtra(OverlayService.EXTRA_RESULT_DATA, data);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(serviceIntent);
-            else startService(serviceIntent);
-            setStatus("Оверлей запущен. Настройки сохранены.");
         }
     }
 }
