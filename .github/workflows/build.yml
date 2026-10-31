@@ -1,4 +1,5 @@
 name: Build APK
+# Signing key is supplied through repository Actions secrets.
 
 on:
   push:
