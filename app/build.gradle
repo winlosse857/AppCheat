@@ -6,6 +6,15 @@ android {
     namespace 'com.rocket.esp'
     compileSdk 34
 
+    signingConfigs {
+        nexoDebug {
+            storeFile file(System.getenv("ANDROID_KEYSTORE_PATH") ?: "${rootDir}/nexo-debug.keystore")
+            storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            keyAlias System.getenv("ANDROID_KEY_ALIAS")
+            keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+        }
+    }
+
     defaultConfig {
         applicationId "com.rocket.esp"
         minSdk 24
@@ -15,6 +24,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig signingConfigs.nexoDebug
+        }
         release {
             minifyEnabled false
         }
