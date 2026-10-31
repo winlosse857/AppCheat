@@ -2,6 +2,9 @@ name: Get Firebase SHA-256
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/firebase-sha256.yml'
 
 permissions:
   contents: read
@@ -24,8 +27,19 @@ jobs:
         with:
           gradle-version: '8.0'
 
+      - name: Create Android debug keystore
+        run: |
+          mkdir -p "$HOME/.config/.android"
+          keytool -genkeypair -v \
+            -keystore "$HOME/.config/.android/debug.keystore" \
+            -storepass android \
+            -keypass android \
+            -alias AndroidDebugKey \
+            -dname "CN=Android Debug,O=Android,C=US" \
+            -keyalg RSA -keysize 2048 -validity 10000
+
       - name: Generate debug signing fingerprint
         run: |
           gradle --no-daemon :app:signingReport | tee signing-report.txt
           echo "---- SHA-256 fingerprints ----"
-          grep -A8 'Variant: debug' signing-report.txt | grep 'SHA-256' || true
+          awk '/Variant: debug$/{show=1} show && /SHA-256:/{print; found=1; exit} /^----------$/{show=0} END{if (!found) exit 1}' signing-report.txt
