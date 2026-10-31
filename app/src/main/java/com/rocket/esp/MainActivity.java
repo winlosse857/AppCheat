@@ -10,6 +10,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.Spinner;
@@ -80,7 +81,7 @@ public class MainActivity extends Activity {
         logo.setBackground(shape(0xFF171B24, 18, 0));
         top.addView(logo, lp(dp(48), dp(48)));
 
-        ScrollView tabsScroll = new ScrollView(this);
+        HorizontalScrollView tabsScroll = new HorizontalScrollView(this);
         tabsScroll.setHorizontalScrollBarEnabled(false);
         LinearLayout tabs = new LinearLayout(this);
         tabs.setGravity(Gravity.CENTER_VERTICAL);
