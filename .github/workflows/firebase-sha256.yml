@@ -1,0 +1,31 @@
+name: Get Firebase SHA-256
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fingerprint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.0'
+
+      - name: Generate debug signing fingerprint
+        run: |
+          gradle --no-daemon :app:signingReport | tee signing-report.txt
+          echo "---- SHA-256 fingerprints ----"
+          grep -A8 'Variant: debug' signing-report.txt | grep 'SHA-256' || true
