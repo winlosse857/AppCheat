@@ -104,7 +104,6 @@ public class MainActivity extends Activity {
         tabParams.weight = 1;
         tabParams.leftMargin = dp(10);
         top.addView(tabsScroll, tabParams);
-        root.addView(top);
 
         LinearLayout body = new LinearLayout(this);
         body.setOrientation(LinearLayout.HORIZONTAL);
